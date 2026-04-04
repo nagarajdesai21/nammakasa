@@ -1,10 +1,10 @@
-# API Specification - Nammakasa Platform
+# API Specification - Nammakasa Zone-Based Platform
 
 ## Overview
-RESTful API for the auto service platform supporting:
+RESTful API for zone-based waste collection platform supporting:
 - Citizen authentication and tracking
-- Driver authentication and task management
-- Admin route creation and auto assignment
+- Driver authentication and zone collection
+- Admin zone creation and daily assignments
 - Location tracking via HTTP polling
 - ETA calculation
 
@@ -17,7 +17,7 @@ Production: https://api.nammakasa.com/api
 ```
 
 ## Response Format
-All responses are JSON with the following structure:
+All responses are JSON:
 ```json
 {
   "success": true/false,
@@ -32,7 +32,7 @@ All responses are JSON with the following structure:
 ## Authentication Endpoints
 
 ### POST /auth/send-otp
-Send OTP to phone number
+Send OTP to phone
 
 **Request:**
 ```json
@@ -48,13 +48,6 @@ Send OTP to phone number
   "success": true,
   "message": "OTP sent successfully",
   "expires_in_seconds": 600
-}
-```
-
-**Response (429):**
-```json
-{
-  "error": "Too many requests. Try after 1 minute."
 }
 ```
 
@@ -150,26 +143,6 @@ Login with phone + password
 
 ---
 
-### POST /auth/refresh-token
-Refresh access token
-
-**Request:**
-```json
-{
-  "refresh_token": "eyJhbGc..."
-}
-```
-
-**Response (200):**
-```json
-{
-  "access_token": "eyJhbGc...",
-  "refresh_token": "eyJhbGc..."
-}
-```
-
----
-
 ## Location Endpoints
 
 ### POST /location/update
@@ -220,10 +193,10 @@ Authorization: Bearer {access_token}
 
 ---
 
-## Task Endpoints
+## Assignment Endpoints (Driver)
 
-### GET /tasks/driver/:driverId
-Get driver's daily tasks
+### GET /assignment/driver/:driverId
+Get driver's zone assignment for today
 
 **Headers:**
 ```
@@ -233,27 +206,32 @@ Authorization: Bearer {access_token}
 **Response (200):**
 ```json
 {
-  "tasks": [
-    {
+  "assignment": {
+    "id": "uuid",
+    "auto_id": "uuid",
+    "zone_id": "uuid",
+    "zone_name": "Zone-A",
+    "assigned_date": "2024-05-15",
+    "status": "assigned",
+    
+    "zone_details": {
       "id": "uuid",
-      "stop_number": 1,
-      "address": "122 Koramangala Main Rd",
-      "customer_name": "Rajesh Kumar",
-      "customer_phone": "+919876543210",
-      "task_type": "collection",
-      "status": "completed",
-      "completed_at": "2024-05-15T09:30:00Z"
+      "name": "Zone-A",
+      "polygon": {
+        "type": "Polygon",
+        "coordinates": [[[77.6, 12.9], [77.7, 12.9], [77.7, 13.0], [77.6, 13.0], [77.6, 12.9]]]
+      },
+      "center_lat": 12.95,
+      "center_lng": 77.65
     }
-  ],
-  "total_stops": 8,
-  "completed_count": 1
+  }
 }
 ```
 
 ---
 
-### POST /tasks/:taskId/complete
-Mark task as completed
+### POST /assignment/driver/:driverId/complete-zone
+Mark zone service as complete
 
 **Headers:**
 ```
@@ -263,8 +241,8 @@ Authorization: Bearer {access_token}
 **Request:**
 ```json
 {
-  "completion_notes": "Completed successfully",
-  "photo_url": "https://s3.../image.jpg"
+  "completion_notes": "All households collected",
+  "photo_url": "https://s3.../image.jpg"  // optional
 }
 ```
 
@@ -272,7 +250,7 @@ Authorization: Bearer {access_token}
 ```json
 {
   "success": true,
-  "task": {
+  "assignment": {
     "id": "uuid",
     "status": "completed",
     "completed_at": "2024-05-15T10:45:00Z"
@@ -284,12 +262,17 @@ Authorization: Bearer {access_token}
 
 ## ETA Endpoint
 
-### GET /eta/:driverId/:citizenId
-Calculate ETA from driver to citizen
+### GET /eta/:driverId/:citizenLatLng
+Calculate ETA from driver to citizen location
 
 **Headers:**
 ```
 Authorization: Bearer {access_token}
+```
+
+**Query Parameters:**
+```
+?latitude=12.9352&longitude=77.6245
 ```
 
 **Response (200):**
@@ -297,8 +280,7 @@ Authorization: Bearer {access_token}
 {
   "distance_km": 2.3,
   "duration_minutes": 12,
-  "arrival_time": "2024-05-15T15:00:00Z",
-  "route_polyline": "encoded_polyline_string"
+  "arrival_time": "2024-05-15T15:00:00Z"
 }
 ```
 
@@ -325,17 +307,18 @@ Admin login
   "admin": {
     "id": "uuid",
     "email": "admin@company.com",
-    "role": "admin"
+    "role": "admin",
+    "wards": ["uuid1", "uuid2"]  // wards they manage
   }
 }
 ```
 
 ---
 
-## Admin Routes Endpoints
+## Admin - Zone Management
 
-### POST /admin/routes
-Create a new route
+### POST /admin/zones
+Create a new zone (draw polygon)
 
 **Headers:**
 ```
@@ -345,20 +328,14 @@ Authorization: Bearer {admin_token}
 **Request:**
 ```json
 {
-  "name": "West Zone Day Shift",
-  "description": "Daily collection route for west zone",
-  "stops": [
-    {
-      "sequence": 1,
-      "address": "122 Koramangala Main Rd",
-      "customer_name": "Rajesh Kumar",
-      "customer_phone": "+919876543210",
-      "task_type": "collection",
-      "lat": 12.9352,
-      "lng": 77.6245,
-      "instructions": "Gate code: 1234"
-    }
-  ]
+  "ward_id": "uuid",
+  "name": "Zone-A",
+  "polygon": {
+    "type": "Polygon",
+    "coordinates": [[[77.6, 12.9], [77.7, 12.9], [77.7, 13.0], [77.6, 13.0], [77.6, 12.9]]]
+  },
+  "center_lat": 12.95,
+  "center_lng": 77.65
 }
 ```
 
@@ -366,27 +343,33 @@ Authorization: Bearer {admin_token}
 ```json
 {
   "id": "uuid",
-  "name": "West Zone Day Shift",
-  "total_stops": 8,
+  "name": "Zone-A",
+  "ward_id": "uuid",
   "created_at": "2024-05-15T10:00:00Z"
 }
 ```
 
 ---
 
-### GET /admin/routes
-List all routes
+### GET /admin/zones
+List all zones for admin's ward(s)
+
+**Query Parameters:**
+```
+?ward_id=uuid  // optional filter by ward
+```
 
 **Response (200):**
 ```json
 {
-  "routes": [
+  "zones": [
     {
       "id": "uuid",
-      "name": "West Zone Day Shift",
-      "total_stops": 8,
-      "assigned_autos": 2,
-      "status": "active"
+      "name": "Zone-A",
+      "ward_id": "uuid",
+      "polygon": {...},
+      "assigned_autos_today": 2,
+      "created_by": "admin@company.com"
     }
   ]
 }
@@ -394,14 +377,14 @@ List all routes
 
 ---
 
-### PATCH /admin/routes/:routeId
-Edit route
+### PATCH /admin/zones/:zoneId
+Edit zone (redraw polygon)
 
 **Request:**
 ```json
 {
-  "name": "West Zone Day Shift - Updated",
-  "stops": [...]
+  "name": "Zone-A-Updated",
+  "polygon": {...}
 }
 ```
 
@@ -409,22 +392,25 @@ Edit route
 ```json
 {
   "id": "uuid",
-  "name": "West Zone Day Shift - Updated"
+  "name": "Zone-A-Updated"
 }
 ```
 
 ---
 
-## Admin Auto Assignment Endpoints
+## Admin - Daily Assignment
 
-### POST /admin/autos/:autoId/assign-route
-Assign route to auto
+### POST /admin/daily-assignments
+Batch assign zones to autos for today
 
 **Request:**
 ```json
 {
-  "route_id": "uuid",
-  "driver_id": "uuid"
+  "assignments": [
+    { "auto_id": "uuid", "zone_id": "uuid" },
+    { "auto_id": "uuid", "zone_id": "uuid" }
+  ],
+  "assigned_date": "2024-05-15"
 }
 ```
 
@@ -432,32 +418,36 @@ Assign route to auto
 ```json
 {
   "success": true,
-  "auto": {
-    "id": "uuid",
-    "auto_number": "MH01AB1234",
-    "assigned_route_id": "uuid",
-    "driver_id": "uuid"
-  },
-  "tasks_created": 8
+  "assignments_created": 2,
+  "assignments": [
+    { "auto_id": "uuid", "zone_id": "uuid", "status": "assigned" }
+  ]
 }
 ```
 
 ---
 
-### GET /admin/autos
-List all autos with assignments
+### GET /admin/daily-assignments
+View today's assignments
+
+**Query Parameters:**
+```
+?date=2024-05-15
+```
 
 **Response (200):**
 ```json
 {
-  "autos": [
+  "assignments": [
     {
       "id": "uuid",
-      "auto_number": "MH01AB1234",
+      "auto_id": "uuid",
+      "auto_number": "MH01",
       "driver_name": "Ram Kumar",
-      "assigned_route": "West Zone Day Shift",
-      "task_progress": "3/8",
-      "completion_percentage": 37.5
+      "zone_id": "uuid",
+      "zone_name": "Zone-A",
+      "status": "in_progress",
+      "assigned_at": "2024-05-15T08:00:00Z"
     }
   ]
 }
@@ -465,25 +455,59 @@ List all autos with assignments
 
 ---
 
-## Admin Dashboard Endpoint
+### PATCH /admin/daily-assignments/:assignmentId
+Reassign zone to different auto
+
+**Request:**
+```json
+{
+  "auto_id": "uuid"  // new auto
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "assignment": {
+    "id": "uuid",
+    "auto_id": "uuid",
+    "status": "reassigned"
+  }
+}
+```
+
+---
+
+## Admin - Dashboard
 
 ### GET /admin/dashboard
 Get dashboard summary
+
+**Query Parameters:**
+```
+?date=2024-05-15&ward_id=uuid
+```
 
 **Response (200):**
 ```json
 {
   "summary": {
-    "total_autos_active": 12,
-    "total_drivers_on_duty": 10,
-    "active_routes": 5,
-    "average_completion_percentage": 68.5,
-    "routes": [
+    "date": "2024-05-15",
+    "ward": "Koramangala",
+    "total_autos": 4,
+    "autos_assigned": 3,
+    "autos_idle": 1,
+    "total_zones": 5,
+    "zones_assigned_today": 3,
+    "average_completion_percentage": 75.5,
+    "assignments": [
       {
-        "name": "West Zone",
-        "stops_completed": 8,
-        "total_stops": 8,
-        "percentage": 100
+        "zone_name": "Zone-A",
+        "auto_number": "MH01",
+        "driver_name": "Ram Kumar",
+        "status": "in_progress",
+        "completion_percentage": 75
       }
     ]
   }
@@ -509,5 +533,5 @@ Get dashboard summary
 
 ## Rate Limiting
 - **Default**: 100 requests/minute per user
-- **Auth endpoints**: 5 requests/minute per phone number
-- **Location updates**: 1 request per 5 seconds per driver
+- **Auth endpoints**: 5 requests/minute per phone
+- **Location updates**: 1 request per 15 seconds per driver

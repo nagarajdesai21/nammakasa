@@ -1,4 +1,4 @@
-# UI/UX Design - Nammakasa Auto Service Platform
+# UI/UX Design - Nammakasa Zone-Based Platform
 
 ## Overview
 Design specifications for:
@@ -22,82 +22,74 @@ Design specifications for:
 │                      │
 │  [SEND OTP]          │
 └──────────────────────┘
-```
 
-### OTP Verification Screen
-```
+    ↓ (After OTP sent)
+
 ┌──────────────────────┐
 │   VERIFY OTP         │
-│                      │
 │  OTP sent to:        │
 │  +91 XXXX XXXX XX    │
-│                      │
 │  [Enter OTP]         │
 │  [_ _ _ _ _ _]       │
-│                      │
-│  [VERIFY]  [RESEND]  │
+│  [VERIFY] [RESEND]   │
 └──────────────────────┘
-```
 
-### Set Password (First Login Only)
-```
+    ↓ (First login only)
+
 ┌──────────────────────┐
 │   SET PASSWORD       │
-│                      │
 │  [Enter Password]    │
 │  [••••••••••]        │
-│                      │
-│  [Complexity info]   │
 │  Min 8 chars         │
-│                      │
 │  [CONTINUE]          │
 └──────────────────────┘
 ```
 
-### Citizen Dashboard
+### Citizen Dashboard (Tracking)
 ```
 ┌──────────────────────────────────┐
 │ NAMMAKASA  [Menu] [Profile]      │
 ├──────────────────────────────────┤
 │                                  │
-│  TODAY'S STATUS                  │
+│  TODAY'S COLLECTION              │
 │  ┌────────────────────────────┐  │
-│  │ Auto Assigned              │  │
-│  │ MH01AB1234                 │  │
+│  │ Zone: Zone-A               │  │
+│  │                            │  │
+│  │ Auto: MH01AB1234           │  │
 │  │ Driver: Ram Kumar          │  │
-│  │ ☎ [Call]                  │  │
+│  │ ☎ [Call Driver]            │  │
 │  └────────────────────────────┘  │
 │                                  │
 │  ┌────────────────────────────┐  │
-│  │ TRACK DRIVER               │  │
-│  │ [Show Map]                 │  │
+│  │ TRACK DRIVER  [Show Map]   │  │
 │  └────────────────────────────┘  │
 │                                  │
 │  ETA INFORMATION                 │
-│  Current Location: Koramangala   │
-│  Stops Remaining: 3 of 8         │
-│  ⏱ ETA: 12 minutes               │
+│  Driver Location: Koramangala    │
+│  Distance to Zone: 2.3 km        │
+│  ⏱ ETA to your area: 12 min     │
 │                                  │
 │  STATUS                          │
-│  ✓ Completed                     │
-│  ⏳ In Progress                   │
-│  ⭕ Pending                       │
+│  ✓ Collection in progress        │
+│  → Will arrive soon              │
 │                                  │
 │  [Contact Support]               │
 └──────────────────────────────────┘
 ```
 
-### Citizen - Map View
+### Citizen - Map View (Tracking Auto)
 ```
 ┌──────────────────────────────────┐
 │ [Back]          TRACKING          │
 ├──────────────────────────────────┤
-│                                  │
 │    ┌────────────────────────┐    │
 │    │   🗺️ Google Maps      │    │
-│    │   🚗 Current Position  │    │
+│    │                        │    │
+│    │   🚗 Driver Location   │    │
 │    │   📍 Your Location     │    │
-│    │   📍 Next Stop         │    │
+│    │   🟦 Your Zone         │    │
+│    │   (Polygon boundary)   │    │
+│    │                        │    │
 │    └────────────────────────┘    │
 │                                  │
 │  Distance: 2.3 km                │
@@ -107,91 +99,60 @@ Design specifications for:
 └──────────────────────────────────┘
 ```
 
-### Driver Dashboard
+### Driver Dashboard (Zone Service)
 ```
 ┌──────────────────────────────────┐
 │ NAMMAKASA  [Menu] [Profile]      │
 ├──────────────────────────────────┤
 │                                  │
-│  TODAY'S ROUTE                   │
-│  Route: West Zone Day Shift      │
-│  Auto: MH01AB1234               │
+│  YOUR ASSIGNMENT TODAY           │
+│  ┌─────────────────────────┐    │
+│  │ Zone: Zone-A            │    │
+│  │ Auto: MH01AB1234        │    │
+│  │                         │    │
+│  │ Instructions:           │    │
+│  │ Collect from all        │    │
+│  │ households in this zone │    │
+│  └─────────────────────────┘    │
 │                                  │
-│  PROGRESS: 3 of 8 ████░░░░░░░░  │
+│  [VIEW ZONE ON MAP]              │
 │                                  │
-│  CURRENT TASK                    │
-│  Stop 3 of 8                     │
-│  📍 Koramangala Main Road        │
-│  Customer: Rajesh Kumar          │
-│  Phone: 98765XXXXX               │
-│  Task: Collection                │
+│  ┌────────────────────────────┐  │
+│  │  🗺️ Map                   │  │
+│  │  🟦 Zone Boundary         │  │
+│  │  🚗 Your Current Location  │  │
+│  │                           │  │
+│  │  Collect as you drive     │  │
+│  └────────────────────────────┘  │
 │                                  │
-│  [START] [COMPLETE] [CALL]       │
+│  [MARK ZONE COMPLETE]            │
 │                                  │
-│  NEXT STOPS                      │
-│  ⭕ Stop 4: Indiranagar          │
-│  ⭕ Stop 5: Whitefield           │
-│  ⭕ Stop 6: Marathahalli         │
-│                                  │
-│  [View All] [View History]       │
+│  Status: In Progress             │
+│  Started: 09:00 AM               │
+│  Time in Zone: 45 min            │
 └──────────────────────────────────┘
 ```
 
-### Driver - Task Detail
+### Driver - Zone Completed
 ```
 ┌──────────────────────────────────┐
-│ [Back]  TASK DETAILS             │
+│ [Back]  CONFIRM COMPLETION       │
 ├──────────────────────────────────┤
 │                                  │
-│  Stop: 3 of 8                    │
-│  📍 122 Koramangala Main Rd      │
+│  Zone Completed!                 │
+│  ✓ Zone-A                        │
 │                                  │
-│  CUSTOMER INFO                   │
-│  Name: Rajesh Kumar              │
-│  Phone: +91 98765XXXXX           │
-│  Email: rajesh@email.com         │
+│  Collection Summary:             │
+│  Started: 09:00 AM               │
+│  Completed: 10:15 AM             │
+│  Duration: 1 hour 15 min         │
 │                                  │
-│  TASK TYPE                       │
-│  🔹 Collection                   │
+│  Zone Boundary:                  │
+│  📍 Entry Point: Koramangala     │
+│  📍 Exit Point: Indiranagar      │
+│  📍 Stops: ~50 households        │
 │                                  │
-│  STATUS: ⭕ Pending              │
-│                                  │
-│  NOTES                           │
-│  "Gate code: 1234, Ring bell"    │
-│                                  │
-│  [Call Customer] [Navigate]      │
-│                                  │
-│  ─────────────────────────────   │
-│  COMPLETION                      │
-│  [Mark as Completed]             │
-│  Optional Notes:                 │
-│  [________________]              │
-│  [SUBMIT]                        │
-└──────────────────────────────────┘
-```
-
-### Driver - Completed Tasks
-```
-┌──────────────────────────────────┐
-│ [Back]  COMPLETED TASKS          │
-├──────────────────────────────────┤
-│                                  │
-│  Today's Progress: 5 of 8        │
-│                                  │
-│  ✓ Stop 1 - Completed 09:30 AM  │
-│    📍 Indiranagar               │
-│                                  │
-│  ✓ Stop 2 - Completed 10:15 AM  │
-│    📍 Koramangala               │
-│                                  │
-│  ✓ Stop 3 - Completed 11:00 AM  │
-│    📍 Whitefield                │
-│                                  │
-│  ⏳ Stop 4 - In Progress          │
-│    📍 Marathahalli              │
-│                                  │
-│  ⭕ Stop 5 - Pending            │
-│    📍 Electronic City           │
+│  [CONFIRM] [EDIT]                │
 └──────────────────────────────────┘
 ```
 
@@ -213,150 +174,148 @@ Design specifications for:
 └────────────────────────────────┘
 ```
 
-### Admin Dashboard
+### Admin Dashboard  
 ```
 ┌─────────────────────────────────────────────────┐
 │ NAMMAKASA Admin   [Notifications] [Profile]     │
 ├─────────────────────────────────────────────────┤
+│ Ward: Koramangala                               │
 │ Today's Overview                                │
 │ ┌──────────┬──────────┬──────────┬──────────┐  │
-│ │ Autos    │ Drivers  │ Routes   │ Progress │  │
-│ │ Active   │ On Duty  │ Active   │ Avg %    │  │
-│ │   12     │   10     │   5      │  68%     │  │
+│ │ Zones    │ Autos    │ Drivers  │ Progress │  │
+│ │ Created  │ Online   │ On Duty  │ Avg %    │  │
+│ │   5      │   4      │   4      │  75%     │  │
 │ └──────────┴──────────┴──────────┴──────────┘  │
 │                                                 │
-│ Real-time Task Completion                       │
-│ Route: West Zone - 8 of 8 ████████░░          │
-│ Route: East Zone  - 5 of 8 █████░░░            │
-│ Route: North Zone - 3 of 6 ███░░░░░            │
+│ Today's Zone Assignments & Completion:          │
+│ Zone-A    │ MH01   │ In Progress... █████░░░  │
+│ Zone-B    │ MH02   │ Completed ✓    █████████ │
+│ Zone-C    │ MH03   │ In Progress... ███░░░░░░ │
+│ Zone-D    │ Idle   │ Not Assigned    -         │
 │                                                 │
-│ Recent Activity                                 │
-│ 11:30 - Auto MH01AB1234 completed Stop 5      │
-│ 11:15 - Driver Ram Kumar started route        │
+│ [Create New Zone] [Daily Assignments]          │
+│ [Drivers]  [Analytics]  [Settings]             │
 └─────────────────────────────────────────────────┘
 ```
 
-### Autos Management
+### Zone Management - Create/Edit
 ```
-┌─────────────────────────────────────────────────┐
-│ AUTOS                    [+ Add Auto]            │
-├─────────────────────────────────────────────────┤
-│ Filter: [Active ▼] Search: [_________]         │
-│ ┌──────────────────────────────────────────┐   │
-│ │ Auto #  │ Driver      │ Route      │ %   │   │
-│ ├──────────────────────────────────────────┤   │
-│ │MH01AB12 │ Ram Kumar   │ West Zone  │ 75% │→  │
-│ │MH01AB13 │ Rajesh K    │ East Zone  │ 60% │→  │
-│ │MH01AB14 │ Prakash     │ North Zone │ 50% │→  │
-│ │MH01AB15 │ [Unassigned]│ -          │  -  │→  │
-│ └──────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────┘
-
-Auto Detail (Click to reassign):
-┌─────────────────────────────────────────────────┐
-│ AUTO: MH01AB1234  [Edit] [Delete]              │
-├─────────────────────────────────────────────────┤
-│ Driver: Ram Kumar                               │
-│ Current Route: West Zone Day Shift              │
-│ Status: Active                                  │
-│                                                 │
-│ REASSIGN ROUTE:                                 │
-│ [Select Route ▼]                               │
-│  - West Zone Day Shift (current)                │
-│  - East Zone Evening Shift                      │
-│  - North Zone Day Shift                         │
-│  - South Zone Evening Shift                     │
-│                                                 │
-│ [ASSIGN] [CANCEL]                              │
-└─────────────────────────────────────────────────┘
-```
-
-### Routes Management
-```
-┌─────────────────────────────────────────────────┐
-│ ROUTES                   [+ Create New Route]   │
-├─────────────────────────────────────────────────┤
-│ Search: [_________]  Filter: [Status ▼]       │
-│ ┌──────────────────────────────────────────┐   │
-│ │ Route Name       │ Stops │ Status │ Autos│   │
-│ ├──────────────────────────────────────────┤   │
-│ │West Zone Shift   │  8    │ Active │  2   │→  │
-│ │East Zone Shift   │  6    │ Active │  1   │→  │
-│ │North Zone Shift  │  7    │ Active │  2   │→  │
-│ │South Zone Shift  │  5    │ Draft  │  -   │→  │
-│ └──────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────┘
-
-Route Builder (Create/Edit):
-┌─────────────────────────────────────────────────┐
-│ CREATE NEW ROUTE  [Cancel]                     │
-├─────────────────────────────────────────────────┤
-│ Route Name: [West Zone Day Shift]              │
-│ Description: [Collection route...]             │
-│                                                 │
-│ STOPS (Drag to reorder):                        │
-│ ☰ 1 📍 Koramangala Main Rd [Edit] [Remove]     │
-│ ☰ 2 📍 Indiranagar Layout   [Edit] [Remove]    │
-│ ☰ 3 📍 Whitefield           [Edit] [Remove]    │
-│ ☰ 4 📍 Marathahalli         [Edit] [Remove]    │
-│                                                 │
-│ [+ Add Stop] [MAP VIEW] [SAVE] [DELETE]        │
-└─────────────────────────────────────────────────┘
-
-Route Builder - Map View:
 ┌──────────────────────────────────────────────────┐
-│ [Back] ROUTE BUILDER - Map [List View]          │
+│  CREATE ZONE                                     │
 ├──────────────────────────────────────────────────┤
-│ ┌────────────────────────────────────────────┐  │
-│ │     🗺️ Google Maps                        │  │
-│ │  ① → ② → ③ → ④ (stops visualization)     │  │
-│ │  📍 Drag stops to reorder                 │  │
-│ │  📍 Click to edit details                 │  │
-│ └────────────────────────────────────────────┘  │
+│  Zone Name: [Zone-A____________]                │
+│  Ward: [Koramangala ▼]                          │
 │                                                  │
-│ Stops:                                           │
-│ ☰ 1 Koramangala - 📍12.93, 77.62               │
-│ ☰ 2 Indiranagar - 📍12.97, 77.64               │
-│ ☰ 3 Whitefield - 📍12.96, 77.71                │
+│  DRAW ZONE BOUNDARY ON MAP:                      │
+│  [Polygon Tool] [Circle Tool] [Clear] [Undo]   │
 │                                                  │
-│ [Add Stop] [Save] [Cancel]                      │
+│  ┌────────────────────────────────────────────┐ │
+│  │     🗺️ Google Maps                        │ │
+│  │                                            │ │
+│  │   Polygon drawn (4 corners):              │ │
+│  │   ① ─────── ④                             │ │
+│  │   │         │                             │ │
+│  │   │ ZONE-A  │                             │ │
+│  │   │         │                             │ │
+│  │   ② ─────── ③                             │ │
+│  │                                            │ │
+│  │   [Click to add corners]                   │ │
+│  │   [Drag to edit]                           │ │
+│  │                                            │ │
+│  └────────────────────────────────────────────┘ │
+│                                                  │
+│  [SAVE ZONE] [CANCEL] [DELETE]                  │
 └──────────────────────────────────────────────────┘
 ```
 
-### Drivers Management
+### Daily Assignment - One-Click
 ```
-┌─────────────────────────────────────────────────┐
-│ DRIVERS                  [+ Add Driver]          │
-├─────────────────────────────────────────────────┤
-│ Filter: [Status ▼]  Search: [_________]        │
+┌──────────────────────────────────────────────────┐
+│ DAILY ASSIGNMENT - Today                         │
+├──────────────────────────────────────────────────┤
+│ Quick Assign (select zone for each auto):        │
+│                                                  │
+│ Auto MH01 | [Zone-A        ▼] | [✓ Assign]     │
+│ Auto MH02 | [Zone-B        ▼] | [✓ Assign]     │
+│ Auto MH03 | [Zone-A        ▼] | [✓ Assign]     │
+│ Auto MH04 | [None          ▼] | [✓ Assign]     │
+│                                                  │
+│ ─────────────────────────────────────────────── │
+│                                                  │
+│ OR Drag & Drop:                                  │
+│ Autos              →     Zones                  │
+│ ┌─────────┐              ┌──────────┐          │
+│ │ MH01    │ ──────────→ │ Zone-A   │          │
+│ │ MH02    │ ──────────→ │ Zone-B   │          │
+│ │ MH03    │ ──────────→ │ Zone-A   │          │
+│ └─────────┘              └──────────┘          │
+│                                                  │
+│ [SAVE ALL ASSIGNMENTS]                          │
+│ ✓ 3 assignments saved | MH04 unassigned         │
+└──────────────────────────────────────────────────┘
+```
+
+### Zones List
+```
+┌──────────────────────────────────────────────────┐
+│ ZONES                        [+ Create New Zone] │
+├──────────────────────────────────────────────────┤
+│ Filter by Ward: [Koramangala ▼]                 │
+│ Search: [_________]                             │
+│                                                  │
 │ ┌──────────────────────────────────────────┐   │
-│ │ Name        │ Auto       │ Status │ Since │  │
+│ │ Zone Name    │ Autos  │ Created By │    │   │
 │ ├──────────────────────────────────────────┤   │
-│ │ Ram Kumar   │ MH01AB1234 │ ✓ On   │ May 1 │  │
-│ │ Rajesh K    │ MH01AB1235 │ ✓ On   │ May 5 │  │
-│ │ Prakash M   │ MH01AB1236 │ ⊘ Off  │May 10│  │
-│ │ Vikram Singh│ -          │ ⏳ Pend │May 15│  │
+│ │ Zone-A       │ 2      │ Admin A    │ → │   │
+│ │ Zone-B       │ 1      │ Admin A    │ → │   │
+│ │ Zone-C       │ 0      │ Admin B    │ → │   │
+│ │ Zone-D       │ 1      │ Admin C    │ → │   │
 │ └──────────────────────────────────────────┘   │
-│                                                 │
-│ Actions: [Approve] [Suspend] [Remove]          │
-└─────────────────────────────────────────────────┘
+│                                                  │
+│ (Click → to view, edit, or delete)              │
+└──────────────────────────────────────────────────┘
+```
+
+### Real-Time Progress
+```
+┌──────────────────────────────────────────────────┐
+│ TODAY'S PROGRESS (Real-Time)                     │
+├──────────────────────────────────────────────────┤
+│                                                  │
+│ Zone-A  (MH01 - Ram Kumar)                      │
+│ ████████████░░░░ In Progress... 75% (12/16)    │
+│ Started: 09:00 AM | Current: Koramangala       │
+│                                                  │
+│ Zone-B  (MH02 - Rajesh K)                       │
+│ █████████████████ Completed! ✓ 100% (10/10)   │
+│ Started: 09:15 AM | Completed: 10:30 AM        │
+│                                                  │
+│ Zone-C  (MH03 - Prakash M)                      │
+│ ██████░░░░░░░░░░ In Progress... 30% (5/16)    │
+│ Started: 09:30 AM | Current: Indiranagar       │
+│                                                  │
+│ Zone-D  (Idle)                                  │
+│ Not Assigned                                    │
+│                                                  │
+│ [View Map]  [Refresh]  [End Day]               │
+└──────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## Design Principles
-- **Clean Interface**: Minimal clutter, focus on essential information
-- **Accessibility**: Large taps zones, readable fonts
-- **Mobile-First**: Designed for 4-6 inch screens first
-- **Consistency**: Same colors, buttons, layouts across screens
-- **Performance**: Fast loading, responsive interactions
+- **Simplicity**: Focus on zones, not individual stops
+- **Visual Feedback**: Show zone boundaries on map clearly
+- **One-Click Assignment**: Dropdown + button, done
+- **Real-Time Updates**: Progress shown without websockets
+- **Mobile-First**: Works on 4-6 inch screens
+- **Accessibility**: Large tap zones, readable fonts
 
 ## Color Scheme
 - **Primary**: Blue (#007AFF)
 - **Success**: Green (#34C759)
-- **Warning**: Orange (#FF9500)
-- **Error**: Red (#FF3B30)
-- **Background**: White (#FFFFFF)
+- **In-Progress**: Orange (#FF9500)
+- **Zone Fill**: Light Blue with transparency
 - **Text**: Dark Gray (#333333)
 
 ## Typography
