@@ -229,6 +229,71 @@ CREATE TABLE otp_verifications (
     } else {
       console.log('✅ Assignments table already exists');
     }
+
+    // Create jwt_sessions table if it doesn't exist
+    const checkJwtSessionsQuery = `
+      SELECT EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_name = 'jwt_sessions'
+      );
+    `;
+    
+    result = await pool.query(checkJwtSessionsQuery);
+    
+    if (!result.rows[0].exists) {
+      console.log('Creating jwt_sessions table...');
+      
+      await pool.query(`
+        CREATE TABLE jwt_sessions (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          token_hash VARCHAR(255) NOT NULL UNIQUE,
+          refresh_token_hash VARCHAR(255) UNIQUE,
+          expires_at TIMESTAMP NOT NULL,
+          revoked_at TIMESTAMP,
+          ip_address VARCHAR(45),
+          user_agent TEXT,
+          device_name VARCHAR(100),
+          is_active BOOLEAN DEFAULT TRUE,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          last_activity TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+      
+      console.log('✅ JWT Sessions table created successfully');
+    } else {
+      console.log('✅ JWT Sessions table already exists');
+    }
+
+    // Create notification_logs table if it doesn't exist
+    const checkNotificationLogsQuery = `
+      SELECT EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_name = 'notification_logs'
+      );
+    `;
+    
+    result = await pool.query(checkNotificationLogsQuery);
+    
+    if (!result.rows[0].exists) {
+      console.log('Creating notification_logs table...');
+      
+      await pool.query(`
+        CREATE TABLE notification_logs (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+          notification_type VARCHAR(50),
+          recipient_email VARCHAR(255),
+          status VARCHAR(20),
+          sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          error_message TEXT
+        );
+      `);
+      
+      console.log('✅ Notification Logs table created successfully');
+    } else {
+      console.log('✅ Notification Logs table already exists');
+    }
     
     console.log('✅ All database tables initialized');
   } catch (error) {
