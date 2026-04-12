@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth.routes.js';
+import customerAuthRoutes from './routes/customerAuth.routes.js';
+import mobileAuthRoutes from './routes/mobileAuth.routes.js';
 import autoRoutes from './routes/auto.routes.js';
 import driverRoutes from './routes/driver.routes.js';
 import routeRoutes from './routes/route.routes.js';
@@ -22,6 +24,8 @@ app.use(express.json());
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/auth', customerAuthRoutes);
+app.use('/api/auth', mobileAuthRoutes);
 app.use('/api/admin/autos', autoRoutes);
 app.use('/api/admin/drivers', driverRoutes);
 app.use('/api/admin/routes', routeRoutes);
