@@ -4,7 +4,7 @@
 RESTful API for zone-based waste collection platform supporting:
 - Citizen authentication and tracking
 - Driver authentication and zone collection
-- Admin zone creation and daily assignments
+- Admin zone creation and  assignments
 - Location tracking via HTTP polling
 - ETA calculation
 

@@ -11,7 +11,7 @@
 **Our Solution**:
 A **Route-Based GPS Tracking System** where:
 1. **City divided into Wards** → Each ward has multiple collection **Routes**
-2. **Admin assigns autos to routes daily** (RouteAssignment: route_id + auto_id + date)
+2. **Admin assigns autos to routes** (RouteAssignment: route_id + auto_id + date)
 3. **Drivers send live GPS continuously** while on route
 4. **Citizens see live auto location + ETA** for their specific route
 5. **System tracks completion with accountability** (photos, timestamps)
@@ -101,7 +101,7 @@ A **Route-Based GPS Tracking System** where:
 1. Install app → Login with OTP (phone)
 2. See dashboard: "Today assigned to route: Indiranagar North"
 3. Start route → GPS auto-sends every 10 secs
-4. Navigate to collection points
+4. Navigate to collection points - optional
 5. At dump yard: Snap photo of waste + mark "Completed"
 6. Backend verifies photos + marks route complete
 ```
@@ -242,6 +242,21 @@ CREATE TABLE notifications (
   sent_at TIMESTAMP,
   created_at TIMESTAMP DEFAULT NOW()
 );
+
+-- OTP_VERIFICATIONS TABLE (for email OTP verification during signup)
+CREATE TABLE otp_verifications (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email VARCHAR(255) UNIQUE NOT NULL,
+  otp VARCHAR(6) NOT NULL,
+  is_used BOOLEAN DEFAULT FALSE,
+  attempts INT DEFAULT 0,
+  expires_at TIMESTAMP NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX idx_otp_email ON otp_verifications(email);
+CREATE INDEX idx_otp_expires_at ON otp_verifications(expires_at);
 ```
 
 ### Key Indexes for Performance
@@ -434,6 +449,106 @@ async function broadcastETA(routeAssignmentId, etaSeconds) {
 
 ---
 
+## STEP 6.5: Admin Signup with Email OTP Verification
+
+### Flow:
+```
+Admin enters details
+    ↓
+Step 1: Fill form (name, email, phone, ward, password)
+    ↓
+Frontend calls: POST /api/auth/send-otp { email }
+    ↓
+Backend generates 6-digit OTP (valid for 10 mins)
+    ↓
+Backend sends OTP via email (HTML template)
+    ↓
+Admin receives email with OTP
+    ↓
+Admin enters OTP on frontend
+    ↓
+Frontend calls: POST /api/auth/verify-otp { email, otp }
+    ↓
+Backend validates OTP (checks expiry, attempts, match)
+    ↓
+OTP marked as used
+    ↓
+Step 2: Email verified ✅
+    ↓
+Admin's account set to "pending_approval" status
+    ↓
+Step 3: Admin approval (backend/manual process)
+    ↓
+Admin receives approval email
+    ↓
+Admin can now login
+```
+
+### API Endpoints:
+
+```
+POST /api/auth/send-otp
+Body: { email: "admin@example.com" }
+Response: { success: true, message: "OTP sent to your email" }
+Error: { error: "Invalid email" } (400)
+
+POST /api/auth/verify-otp
+Body: { email: "admin@example.com", otp: "123456" }
+Response: { success: true, message: "OTP verified successfully" }
+Error: { error: "Invalid OTP" } (400)
+Error: { error: "OTP has expired" } (400)
+Error: { error: "Max attempts exceeded" } (400)
+```
+
+### Database - OTP Table:
+
+```sql
+CREATE TABLE otp_verifications (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email VARCHAR(255) UNIQUE NOT NULL,
+  otp VARCHAR(6) NOT NULL,
+  is_used BOOLEAN DEFAULT FALSE,
+  attempts INT DEFAULT 0,         -- Track wrong attempts (max 3)
+  expires_at TIMESTAMP NOT NULL,  -- 10 minutes from creation
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Indexes for performance
+CREATE INDEX idx_otp_email ON otp_verifications(email);
+CREATE INDEX idx_otp_expires_at ON otp_verifications(expires_at);
+```
+
+### OTP Lifecycle:
+
+| Event | Status | Details |
+|-------|--------|---------|
+| **OTP Generated** | Active | Created at current timestamp, expires in 10 mins |
+| **Correct OTP Entered** | Used | `is_used = TRUE`, allow admin to proceed |
+| **Wrong OTP Entered** | Active | `attempts++` (max 3), show error |
+| **Max Attempts (3)** | Locked | Show "max attempts exceeded", prompt resend |
+| **OTP Expires** | Expired | After 10 mins, validation fails |
+| **Resend Requested** | Replaced | Old OTP deleted, new OTP generated |
+
+### Frontend - Signup Flow:
+
+```
+Step 1: Details Form (name, email, phone, ward, password)
+    ↓ [Continue button]
+Step 2: OTP Verification (email OTP input, resend button with 60s countdown)
+    ↓ [Verify OTP button]
+Step 3: Approval Status (pending admin approval message)
+    ↓ [Go to Login button]
+```
+
+### Email Template:
+- From: noreply@nammakasa.gov.in
+- Subject: "Nammakasa - Email Verification OTP"
+- Content: Large OTP display, 10-minute expiry message, do-not-share warning
+- Design: Government-style (Karnataka colors)
+
+---
+
 ## STEP 7: Admin Panel - Route Assignment
 
 ### Admin Dashboard Features:
@@ -491,9 +606,10 @@ Response: PDF/CSV with all collections data
 
 ### Phase 1: Auth + Database (Week 1-2)
 - Setup Express backend + PostgreSQL
-- Implement OTP authentication (Firebase)
+- Implement OTP email verification for signup (6-digit OTP, 10 min expiry)
 - JWT token management
-- User registration (Citizen/Driver/Admin)
+- User registration (Citizen/Driver/Admin) with email verification
+- OTP storage in `otp_verifications` table with expiry tracking
 
 ### Phase 2: Route Management (Week 2-3)
 - Create routes + wards CRUD
@@ -542,110 +658,54 @@ Response: PDF/CSV with all collections data
 
 ```
 nammakasa/
-├── backend/
-│   ├── src/
-│   │   ├── config/
-│   │   │   ├── database.js
-│   │   │   ├── firebase.js
-│   │   │   └── googleMaps.js
-│   │   ├── models/
-│   │   │   ├── User.js
-│   │   │   ├── Ward.js
-│   │   │   ├── Route.js
-│   │   │   ├── RouteAssignment.js
-│   │   │   ├── GpsLog.js
-│   │   │   ├── Task.js
-│   │   │   ├── TaskCompletion.js
-│   │   │   └── Notification.js
-│   │   ├── services/
-│   │   │   ├── authService.js
-│   │   │   ├── gpsService.js
-│   │   │   ├── etaService.js
-│   │   │   ├── routeService.js
-│   │   │   └── notificationService.js
-│   │   ├── routes/
-│   │   │   ├── auth.routes.js
-│   │   │   ├── driver.routes.js
-│   │   │   ├── citizen.routes.js
-│   │   │   ├── admin.routes.js
-│   │   │   └── gps.routes.js
-│   │   ├── middleware/
-│   │   │   ├── auth.js
-│   │   │   ├── errorHandler.js
-│   │   │   └── upload.js
-│   │   ├── socket/
-│   │   │   └── socketHandler.js
-│   │   └── server.js
-│   ├── tests/
-│   ├── .env.example
-│   ├── docker-compose.yml
-│   ├── package.json
-│   └── README.md
-│
-├── mobile/
-│   ├── citizen/
+├── services/                      ← All backend services
+│   ├── admin-backend/             ← Admin panel backend (Node.js + Express + PostgreSQL)
 │   │   ├── src/
-│   │   │   ├── screens/
-│   │   │   │   ├── LoginScreen.js
-│   │   │   │   ├── DashboardScreen.js
-│   │   │   │   ├── TrackingMapScreen.js
-│   │   │   │   ├── NotificationCenter.js
-│   │   │   │   └── HistoryScreen.js
-│   │   │   ├── components/
-│   │   │   │   ├── LiveMap.js
-│   │   │   │   ├── ETADisplay.js
-│   │   │   │   └── RouteInfo.js
+│   │   │   ├── config/
+│   │   │   │   ├── database.js    # PostgreSQL connection pool
+│   │   │   │   └── email.js       # Nodemailer SMTP for OTP emails
+│   │   │   ├── models/
+│   │   │   │   ├── User.js        # (Future) User model
+│   │   │   │   └── ... (more models as needed)
 │   │   │   ├── services/
-│   │   │   │   ├── api.js
-│   │   │   │   ├── socketService.js
-│   │   │   │   └── authService.js
-│   │   │   ├── context/
-│   │   │   │   └── AuthContext.js
-│   │   │   └── App.js
-│   │   ├── app.json
-│   │   └── package.json
+│   │   │   │   ├── otpService.js  # Generate, verify, cleanup OTPs
+│   │   │   │   ├── authService.js # User signup/login
+│   │   │   │   └── ... (more services)
+│   │   │   ├── routes/
+│   │   │   │   ├── auth.routes.js # /api/auth/send-otp, /api/auth/verify-otp
+│   │   │   │   ├── admin.routes.js # (Future) Admin endpoints
+│   │   │   │   └── ... (more routes)
+│   │   │   ├── middleware/
+│   │   │   │   ├── auth.js        # JWT verification
+│   │   │   │   └── errorHandler.js
+│   │   │   └── server.js          # Express server entry point
+│   │   ├── .env.example
+│   │   ├── .gitignore
+│   │   ├── package.json
+│   │   ├── README.md
+│   │   └── docs/
+│   │       └── API.md
 │   │
-│   └── driver/
+│   └── app-backend/               ← Mobile app backend (GPS, real-time tracking) [FUTURE]
 │       ├── src/
-│       │   ├── screens/
-│       │   │   ├── LoginScreen.js
-│       │   │   ├── DashboardScreen.js
-│       │   │   ├── RouteDetailScreen.js
-│       │   │   ├── TaskCompleteScreen.js
-│       │   │   └── HistoryScreen.js
-│       │   ├── components/
-│       │   │   └── LocationPermission.js
-│       │   ├── services/
-│       │   │   ├── gpsService.js
-│       │   │   ├── api.js
-│       │   │   └── authService.js
-│       │   ├── context/
-│       │   │   └── AuthContext.js
-│       │   └── App.js
-│       ├── app.json
+│       ├── socket/
 │       └── package.json
 │
-├── admin/
-│   ├── src/
-│   │   ├── pages/
-│   │   │   ├── LoginPage.js
-│   │   │   ├── DashboardPage.js
-│   │   │   ├── RouteAssignmentPage.js
-│   │   │   ├── LiveTrackingPage.js
-│   │   │   └── ReportPage.js
-│   │   ├── components/
-│   │   │   └── MapView.js
-│   │   ├── services/
-│   │   │   └── api.js
-│   │   └── App.js
-│   ├── package.json
-│   └── README.md
+├── apps/                          ← All frontend applications
+│   ├── admin-panel/               ← Admin panel (React + Vite)
+│   │   ├── src/
+│   │   ├── .env.example
+│   │   └── package.json
+│   ├── citizen-app/               ← Citizen mobile app (React Native) [FUTURE]
+│   └── driver-app/                ← Driver mobile app (React Native) [FUTURE]
 │
-└── docs/
-    ├── API.md
-    ├── ARCHITECTURE.md
-    ├── SETUP.md
-    └── DEPLOYMENT.md
+├── docs/
+│   ├── ARCHITECTURE_PLAN.md
+│   ├── API.md
+│   ├── SETUP.md
+│   └── DEPLOYMENT.md
+│
+└── ARCHITECTURE_PLAN.md (this file)
 ```
 
 ---
