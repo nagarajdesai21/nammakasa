@@ -12,7 +12,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import TextInput from '../../components/TextInput';
 import Button from '../../components/Button';
 import apiService from '../../services/apiService';
-import useAuthStore from '../../store/authStore';
+import { useAuth } from '../../stores/AuthContext';
 import type { RootStackParamList } from '../../../App';
 
 type OtpVerificationPageProps = NativeStackScreenProps<RootStackParamList, 'OtpVerification'>;
@@ -21,17 +21,17 @@ const OtpVerificationPage: React.FC<OtpVerificationPageProps> = ({
   navigation,
   route,
 }) => {
-  const { type, email, phone } = route.params;
+  const { type, email, phone, isSignup, signupData } = route.params as any;
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
   const [resendTimer, setResendTimer] = useState(60);
   const [canResend, setCanResend] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const { setToken, setUserType } = useAuthStore();
+  const { setToken, setUserType } = useAuth();
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: number;
     if (resendTimer > 0) {
       interval = setInterval(() => {
         setResendTimer((prev) => prev - 1);
@@ -58,15 +58,34 @@ const OtpVerificationPage: React.FC<OtpVerificationPageProps> = ({
       setLoading(true);
 
       if (type === 'customer') {
-        const response = await apiService.verifyCustomerSignupOtp(
+        // Verify OTP first
+        const otpResponse = await apiService.verifyCustomerSignupOtp(
           email || '',
           phone,
           otp
         );
-        
-        if (response.data.token) {
-          await setToken(response.data.token);
-          await setUserType('customer');
+        console.log('OTP Verification Response:', otpResponse.data);
+
+        // If this is a signup flow, register the customer
+        if (isSignup && signupData) {
+          console.log('Registering customer with data:', signupData);
+          const registerResponse = await apiService.registerCustomer(signupData);
+          console.log('Registration Response:', registerResponse.data);
+          
+          // Show success alert and navigate to login
+          Alert.alert('Success', 'Account created successfully!\n\nPlease log in with your email and password.', [
+            {
+              text: 'OK',
+              onPress: () => navigation.replace('Login'),
+            },
+          ]);
+        } else {
+          // This is a login flow (driver only)
+          if (otpResponse.data.token) {
+            await setToken(otpResponse.data.token);
+            await setUserType('customer');
+            navigation.replace('CustomerDashboard');
+          }
         }
       } else if (type === 'driver') {
         const response = await apiService.verifyDriverLoginOtp(phone, otp);
@@ -74,10 +93,14 @@ const OtpVerificationPage: React.FC<OtpVerificationPageProps> = ({
         if (response.data.token) {
           await setToken(response.data.token);
           await setUserType('driver');
+          // Navigate to driver dashboard
+          navigation.replace('DriverDashboard');
         }
       }
     } catch (error: any) {
-      Alert.alert('Error', error.response?.data?.error || 'Invalid OTP');
+      console.error('OTP Verification Error:', error);
+      const errorMessage = error.response?.data?.error || error.message || 'Invalid OTP';
+      Alert.alert('Error', errorMessage);
       setOtp('');
     } finally {
       setLoading(false);

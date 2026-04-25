@@ -1,4 +1,4 @@
-import { create, SetState } from 'zustand';
+import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface AuthStoreState {
@@ -14,7 +14,7 @@ interface AuthStoreState {
   logout: () => void;
 }
 
-const useAuthStore = create<AuthStoreState>((set: SetState<AuthStoreState>) => ({
+const useAuthStore = create<AuthStoreState>((set) => ({
   token: null,
   userType: null,
   user: null,
