@@ -4,9 +4,6 @@ import {
   Bar,
   LineChart,
   Line,
-  PieChart,
-  Pie,
-  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -21,6 +18,8 @@ import {
   CheckCircle,
   AlertCircle,
   TrendingUp,
+  MessageCircle,
+  AlertTriangle,
 } from 'lucide-react';
 import useAuthStore from '../store/authStore';
 
@@ -37,10 +36,19 @@ const mockCollectionData = [
   { day: 'Sun', completed: 180, pending: 60 },
 ];
 
-const mockAutoTypeData = [
-  { name: 'Compactor', value: 45, color: '#FF6B00' },
-  { name: 'Tipper', value: 32, color: '#003D82' },
-  { name: 'Tractor', value: 23, color: '#00A86B' },
+const mockActiveComplaints = [
+  { id: 1, issue: 'Garbage overflow on Indiranagar North', date: '2024-12-25', status: 'Pending' },
+  { id: 2, issue: 'Overflowing bins near market area', date: '2024-12-24', status: 'In Progress' },
+  { id: 3, issue: 'Collection not done in Koramangala zone', date: '2024-12-23', status: 'Pending' },
+  { id: 4, issue: 'Vehicle delayed beyond scheduled time', date: '2024-12-22', status: 'In Progress' },
+  { id: 5, issue: 'Unauthorized dumping near residential area', date: '2024-12-21', status: 'Pending' },
+];
+
+const mockSolvedComplaints = [
+  { id: 101, issue: 'Garbage overflow on Whitefield road', resolvedDate: '2024-12-20', resolvedIn: '4 hours' },
+  { id: 102, issue: 'Missing collection in Ward 46', resolvedDate: '2024-12-19', resolvedIn: '2 hours' },
+  { id: 103, issue: 'Spillage during collection', resolvedDate: '2024-12-18', resolvedIn: '3 hours' },
+  { id: 104, issue: 'Vehicle parked on road blocking traffic', resolvedDate: '2024-12-17', resolvedIn: '1 hour' },
 ];
 
 const mockWardData = [
@@ -65,7 +73,8 @@ export default function Dashboard() {
 
   // Use mock data (currently enabled)
   const collectionData = mockCollectionData;
-  const autoTypeData = mockAutoTypeData;
+  const activeComplaints = mockActiveComplaints;
+  const solvedComplaints = mockSolvedComplaints;
   const wardData = mockWardData;
 
   // TODO: To fetch from real API, uncomment below and comment out mock data above:
@@ -194,7 +203,7 @@ export default function Dashboard() {
       </div>
 
       {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-1 gap-6 mb-8">
         {/* Weekly Collection Trend */}
         <div className="card">
           <h3 className="text-lg font-bold text-gray-900 mb-4">
@@ -210,32 +219,6 @@ export default function Dashboard() {
               <Bar dataKey="completed" fill="#00A86B" name="Completed" />
               <Bar dataKey="pending" fill="#FF6B00" name="Pending" />
             </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Auto Type Distribution */}
-        <div className="card">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">
-            Auto Type Distribution
-          </h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={autoTypeData}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ name, value }) => `${name}: ${value}`}
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="value"
-              >
-                {autoTypeData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
           </ResponsiveContainer>
         </div>
       </div>
@@ -257,6 +240,63 @@ export default function Dashboard() {
             <Bar dataKey="routes" fill="#00A86B" name="Routes" />
           </BarChart>
         </ResponsiveContainer>
+      </div>
+
+      {/* Complaints Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        {/* Active Complaints */}
+        <div className="card">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold text-gray-900">
+              Active Complaints
+            </h3>
+            <div className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-sm font-semibold">
+              {activeComplaints.length}
+            </div>
+          </div>
+          <div className="space-y-3 max-h-96 overflow-y-auto">
+            {activeComplaints.map((complaint) => (
+              <div key={complaint.id} className="border-l-4 border-red-500 pl-3 py-2">
+                <p className="text-sm font-medium text-gray-900">{complaint.issue}</p>
+                <div className="flex items-center justify-between mt-1">
+                  <span className="text-xs text-gray-500">{complaint.date}</span>
+                  <span className={`text-xs font-semibold px-2 py-1 rounded ${
+                    complaint.status === 'In Progress' 
+                      ? 'bg-yellow-100 text-yellow-700' 
+                      : 'bg-red-100 text-red-700'
+                  }`}>
+                    {complaint.status}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Solved Complaints */}
+        <div className="card">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold text-gray-900">
+              Resolved Complaints
+            </h3>
+            <div className="bg-green-100 text-green-600 px-3 py-1 rounded-full text-sm font-semibold">
+              {solvedComplaints.length}
+            </div>
+          </div>
+          <div className="space-y-3 max-h-96 overflow-y-auto">
+            {solvedComplaints.map((complaint) => (
+              <div key={complaint.id} className="border-l-4 border-green-500 pl-3 py-2">
+                <p className="text-sm font-medium text-gray-900">{complaint.issue}</p>
+                <div className="flex items-center justify-between mt-1">
+                  <span className="text-xs text-gray-500">Resolved: {complaint.resolvedDate}</span>
+                  <span className="text-xs font-semibold text-green-600 bg-green-100 px-2 py-1 rounded">
+                    {complaint.resolvedIn}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Collection Summary */}

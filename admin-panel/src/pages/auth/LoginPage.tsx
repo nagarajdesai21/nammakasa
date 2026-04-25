@@ -178,21 +178,11 @@ export default function LoginPage() {
                 <input type="checkbox" className="w-4 h-4 rounded" />
                 <span className="text-gray-600">Remember me</span>
               </label>
-              <a href="#" className="text-karnataka-primary hover:underline">
+              <Link to="/forgot-password" className="text-karnataka-primary hover:underline">
                 Forgot password?
-              </a>
+              </Link>
             </div>
           </form>
-
-          {/* Demo Credentials */}
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <p className="text-xs text-gray-500 text-center mb-2">Demo Credentials:</p>
-            <p className="text-xs text-gray-600 text-center">
-              Email: demo@gov.in
-              <br />
-              Password: demo123
-            </p>
-          </div>
 
           {/* Signup Link */}
           <div className="text-center mt-6">

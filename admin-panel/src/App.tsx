@@ -4,6 +4,7 @@ import useAuthStore from './store/authStore';
 // Pages
 import LoginPage from './pages/auth/LoginPage';
 import SignupPage from './pages/auth/SignupPage';
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 import Dashboard from './pages/Dashboard';
 import AddAutoPage from './pages/features/AddAutoPage';
 import AddRouteInfoPage from './pages/features/AddRouteInfoPage';
@@ -77,6 +78,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       )}

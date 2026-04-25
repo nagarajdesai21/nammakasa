@@ -1,6 +1,6 @@
 import express from 'express';
 import { sendOTP, verifyOTP } from '../services/otpService.js';
-import { signupUser, loginUser, getUserById } from '../services/authService.js';
+import { signupUser, loginUser, getUserById, resetUserPassword } from '../services/authService.js';
 import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -129,6 +129,34 @@ router.post('/verify-token', authMiddleware, (req, res) => {
     valid: true,
     user: req.user
   });
+});
+
+// Reset password
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { email, newPassword, confirmPassword } = req.body;
+
+    // Validation
+    if (!email || !newPassword || !confirmPassword) {
+      return res.status(400).json({ error: 'All fields are required' });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({ error: 'Passwords do not match' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    }
+
+    // Reset password (OTP verification already done in frontend)
+    const result = await resetUserPassword(email, newPassword);
+    res.json(result);
+  } catch (error) {
+    console.error('Error:', error);
+    const message = error.message || 'Failed to reset password';
+    res.status(400).json({ error: message });
+  }
 });
 
 export default router;

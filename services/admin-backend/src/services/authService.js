@@ -178,3 +178,43 @@ export const getUserById = async (userId) => {
     throw error;
   }
 };
+
+// Reset user password
+export const resetUserPassword = async (email, newPassword) => {
+  try {
+    // Check if user exists
+    const userResult = await pool.query(
+      'SELECT id, email FROM users WHERE email = $1',
+      [email]
+    );
+
+    if (userResult.rows.length === 0) {
+      throw new Error('User not found');
+    }
+
+    const user = userResult.rows[0];
+
+    // Hash new password
+    const passwordHash = await hashPassword(newPassword);
+
+    // Update password
+    const updateResult = await pool.query(
+      `UPDATE users 
+       SET password_hash = $1
+       WHERE id = $2
+       RETURNING id, email`,
+      [passwordHash, user.id]
+    );
+
+    if (updateResult.rows.length === 0) {
+      throw new Error('Failed to reset password');
+    }
+
+    return {
+      success: true,
+      message: 'Password has been reset successfully'
+    };
+  } catch (error) {
+    throw error;
+  }
+};
